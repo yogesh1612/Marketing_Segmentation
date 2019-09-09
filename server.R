@@ -133,8 +133,8 @@ shinyServer(function(input, output){
             round(2)%>%
             mutate_if(is.numeric, function(x) {
               cell_spec(x, bold = T, 
-                        color = spec_color(x, end = 0.9),
-                        font_size = spec_font_size(x,begin = 14,end = 20))
+                      #  color = spec_color(x, end = 0.9),
+                        font_size = spec_font_size(x,begin = 14,end = 18))
             }) %>%
             kable(escape = F, align = "c") %>%
             kable_styling(c("striped", "condensed"), full_width = F)%>%
@@ -162,8 +162,8 @@ shinyServer(function(input, output){
                 round(2)%>%
                 mutate_if(is.numeric, function(x) {
                   cell_spec(x, bold = T, 
-                            color = spec_color(x, end = 0.9),
-                            font_size = spec_font_size(x,begin = 14,end = 20))
+                            #color = spec_color(x, end = 0.9),
+                            font_size = spec_font_size(x,begin = 14,end = 18))
                 }) %>%
                 kable(escape = F, align = "c") %>%
                 kable_styling(c("striped", "condensed"), full_width = F)%>%
