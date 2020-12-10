@@ -148,7 +148,7 @@ shinyServer(function(input, output){
             {paste0("rgb(255,", ., ",", ., ")")}
           
           
-          Summary<- datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+          Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
           
           
           
@@ -292,7 +292,7 @@ shinyServer(function(input, output){
         }
         d <- dist(Dataset(), method = "euclidean") # distance matrix
         fit <- hclust(d, method="ward.D2")         
-        fit1<- set(fit1, "labels_cex", 0.9)
+        fit1<- set(fit, "labels_cex", 0.9)
 
         fit1 %>% set("branches_k_color", k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
         
