@@ -75,7 +75,7 @@ shinyServer(function(input, output){
       
       else {
         fit = kmeans(Dataset(),input$Clust)
-        Segment.Membership =  fit$cluster
+        Segment.Membership =  paste0("segment","_",fit$cluster)
         d = data.frame(r.name = row.names(Dataset2()),Segment.Membership,Dataset2())
         return(d)
       }
@@ -90,6 +90,7 @@ shinyServer(function(input, output){
         distm <- dist(Dataset(), method = "euclidean") # distance matrix
         fit <- hclust(distm, method="ward") 
         Segment.Membership =  cutree(fit, k=input$Clust)
+        Segment.Membership =  paste0("segment","_",Segment.Membership)
         d = data.frame(r.name = row.names(Dataset2()),Segment.Membership,Dataset2())
         return(d)
       }
@@ -107,7 +108,10 @@ shinyServer(function(input, output){
       else return (NULL)
     })
     
-    output$summary <- renderText({
+   
+    
+    
+     output$summary <- renderDataTable({
       
       set.seed(12345)
       
@@ -125,20 +129,60 @@ shinyServer(function(input, output){
           # Summary = list(Segment.Membership = Segment.Membership, SegMeans =clustmeans, Count = table(Segment.Membership) )
           # 
           # 
-          Summary<-t0()[-1] %>% 
-            #mutate(Group = as.factor(Segment.Membership)) %>%
-            group_by(Segment.Membership) %>%
-            summarize_all(.funs = list(mean)) %>%
-            arrange(Segment.Membership) %>%
-            round(2)%>%
-            mutate_if(is.numeric, function(x) {
-              cell_spec(x, bold = T, 
-                      #  color = spec_color(x, end = 0.9),
-                        font_size = spec_font_size(x,begin = 14,end = 18))
-            }) %>%
-            kable(escape = F, align = "c") %>%
-            kable_styling(c("striped", "condensed"), full_width = F)%>%
-          footnote(general = "Mean value of all variables within each cluster. ")
+          
+
+          summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
+            summarise_if(is.numeric, ~round(mean(.),2))
+
+          summ_t <- as.data.frame(t(summ))%>%`colnames<-`(.[1, ]) %>% .[-1, ]
+          summ_t[] <- lapply(summ_t, function(x) as.numeric(as.character(x)))
+          summ_t<- summ_t %>% rownames_to_column("Variable")
+
+          
+          brks <- quantile(summ_t[-1], probs = seq(.05, .95, .05), na.rm = TRUE)
+          clrs <- round(seq(255, 40, length.out = length(brks) + 1), 0) %>%
+            {paste0("rgb(255,", ., ",", ., ")")}
+          
+          
+          Summary<- datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+          
+          
+          
+          
+          # summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
+          #   summarise_if(is.numeric, ~round(mean(.),2))
+          # 
+          # summ_t <- as.data.frame(t(summ))%>%`colnames<-`(.[1, ]) %>% .[-1, ]
+          # summ_t[] <- lapply(summ_t, function(x) as.numeric(as.character(x)))
+          # summ_t<- summ_t %>% rownames_to_column("Variable")
+          # 
+          # summ_t1 <- summ_t%>% mutate_if(is.numeric, function(x) {
+          #   cell_spec(x, bold = T, 
+          #             color = spec_color(x, end = 0.9,option = "C"),
+          #             font_size = spec_font_size(x,begin = 14,end = 18))
+          # })
+          # 
+          # Summary <- summ_t1%>%
+          #   kable(escape = F, align = "c") %>%
+          #   kable_styling(c("striped", "condensed"), full_width = F)%>%
+          #   footnote(general = "Mean value of all variables within each cluster. ")
+          # 
+          
+          
+          # Summary<-t0()[-1] %>% 
+          #   #mutate(Group = as.factor(Segment.Membership)) %>%
+          #   group_by(Segment.Membership) %>%
+          #   summarize_all(.funs = list(mean)) %>%
+          #   arrange(Segment.Membership) %>%
+          #   round(2)%>%
+          #   mutate_if(is.numeric, function(x) {
+          #     cell_spec(x, bold = T, 
+          #               color = spec_color(x, end = 0.9),
+          #               font_size = spec_font_size(x,begin = 14,end = 18))
+          #   }) %>%
+          #   kable(escape = F, align = "c") %>%
+          #   kable_styling(c("striped", "condensed"), full_width = F)%>%
+          # footnote(general = "Mean value of all variables within each cluster. ")
           return(Summary)
         }
       })  
@@ -153,21 +197,40 @@ shinyServer(function(input, output){
               # Segment.Membership =  as.character(cutree(fit, k=input$Clust))
               # clustmeans = aggregate(Dataset2(),by = list(Segment.Membership), FUN = mean)
               # Summary = list(Segment.Membership = Segment.Membership, SegMeans =clustmeans, Count = table(Segment.Membership), ModelSumm = fit )
-              # Summary
-              Summary<-t0()[-1] %>% 
-               # mutate(Group = as.factor(Segment.Membership)) %>%
-                group_by(Segment.Membership) %>%
-                summarize_all(.funs = list(mean)) %>%
-                arrange(Segment.Membership) %>%
-                round(2)%>%
-                mutate_if(is.numeric, function(x) {
-                  cell_spec(x, bold = T, 
-                            #color = spec_color(x, end = 0.9),
-                            font_size = spec_font_size(x,begin = 14,end = 18))
-                }) %>%
-                kable(escape = F, align = "c") %>%
-                kable_styling(c("striped", "condensed"), full_width = F)%>%
-                footnote(general = "Mean value of all variables within each cluster. ")
+              # 
+              
+              summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
+                summarise_if(is.numeric, ~round(mean(.),2))
+              
+              summ_t <- as.data.frame(t(summ))%>%`colnames<-`(.[1, ]) %>% .[-1, ]
+              summ_t[] <- lapply(summ_t, function(x) as.numeric(as.character(x)))
+              summ_t<- summ_t %>% rownames_to_column("Variable")
+              
+              
+              brks <- quantile(summ_t[-1], probs = seq(.05, .95, .05), na.rm = TRUE)
+              clrs <- round(seq(255, 40, length.out = length(brks) + 1), 0) %>%
+                {paste0("rgb(255,", ., ",", ., ")")}
+              
+              
+              Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+              
+              
+              
+              
+              # Summary<-t0()[-1] %>% 
+              #  # mutate(Group = as.factor(Segment.Membership)) %>%
+              #   group_by(Segment.Membership) %>%
+              #   summarize_all(.funs = list(mean)) %>%
+              #   arrange(Segment.Membership) %>%
+              #   round(2)%>%
+              #   mutate_if(is.numeric, function(x) {
+              #     cell_spec(x, bold = T, 
+              #               #color = spec_color(x, end = 0.9),
+              #               font_size = spec_font_size(x,begin = 14,end = 18))
+              #   }) %>%
+              #   kable(escape = F, align = "c") %>%
+              #   kable_styling(c("striped", "condensed"), full_width = F)%>%
+              #   footnote(general = "Mean value of all variables within each cluster. ")
               return(Summary)
             }
           })
@@ -197,7 +260,7 @@ shinyServer(function(input, output){
         
         fit = kmeans(Dataset(),input$Clust)
         
-        classif1 = as.character(fit$cluster)
+        classif1 = paste0("segment","_",fit$cluster)
         data.pca <- prcomp(Dataset(),
                            center = TRUE,
                            scale. = TRUE)
@@ -223,13 +286,18 @@ shinyServer(function(input, output){
           # User has not uploaded a file yet
           return(data.frame())
         }
-        
         d <- dist(Dataset(), method = "euclidean") # distance matrix
-        fit <- hclust(d, method="ward") 
-        plot(fit) # display dendogram
-        groups <- cutree(fit, k=input$Clust) # cut tree into 5 clusters
-        # draw dendogram with red borders around the 5 clusters
-        rect.hclust(fit, k=input$Clust, border="red") 
+        fit <- hclust(d, method="ward.D2")         
+        fit1<- set(fit1, "labels_cex", 0.9)
+
+        fit1 %>% set("branches_k_color", k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
+        
+        fit1 %>% rect.dendrogram(k=input$Clust, horiz = FALSE,
+                                 border = 8, lty = 5, lwd = 1)
+        # plot(fit) # display dendogram
+        # groups <- cutree(fit, k=input$Clust) # cut tree into 5 clusters
+        # # draw dendogram with red borders around the 5 clusters
+        # rect.hclust(fit, k=input$Clust, border="red") 
       })
     })
     
