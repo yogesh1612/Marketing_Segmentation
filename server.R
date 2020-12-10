@@ -8,11 +8,14 @@ library('cluster')
 library('ggbiplot')
 library('mclust')
 library('MASS')
-library('kableExtra')
+#library('kableExtra')
 library('ggplot2')
 library('scales')
 library('gridExtra')
 library('data.table')
+library('dendextend')
+library('DT')
+
 
 
 
