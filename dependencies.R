@@ -13,4 +13,5 @@ if (!require(dplyr)) {install.packages("dplyr")};  library(dplyr)
 # (!require(kableExtra)) {install.packages("kableExtra")};  library(kableExtra)
 if (!require(DT)) {install.packages("DT")};  library(DT)
 if (!require(dendextend)) {install.packages("dendextend")};  library(dendextend)
+if (!require(tibble)) {install.packages("tibble")};  library(tibble)
 
