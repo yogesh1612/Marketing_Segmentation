@@ -10,4 +10,7 @@ if (!require(MASS)) {install.packages("MASS")};  library(MASS)
 if (!require(ggbiplot)) {install_github("ggbiplot","vqv")};  library(ggbiplot)
 if (!require(gridExtra)) {install.packages("gridExtra")};  library(gridExtra)
 if (!require(dplyr)) {install.packages("dplyr")};  library(dplyr)
-if (!require(kableExtra)) {install.packages("kableExtra")};  library(kableExtra)
+# (!require(kableExtra)) {install.packages("kableExtra")};  library(kableExtra)
+if (!require(DT)) {install.packages("DT")};  library(DT)
+if (!require(dendextend)) {install.packages("dendextend")};  library(dendextend)
+
