@@ -292,9 +292,9 @@ shinyServer(function(input, output){
         }
         d <- dist(Dataset(), method = "euclidean") # distance matrix
         fit <- hclust(d, method="ward.D2")         
-        fit1<- set(fit, "labels_cex", 0.9)
+        fit1<- dendextend::set(fit, "labels_cex", 0.9)
 
-        fit1 %>% set("branches_k_color", k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
+        fit1 %>% dendextend::set("branches_k_color", k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
         
         fit1 %>% rect.dendrogram(k=input$Clust, horiz = FALSE,
                                  border = 8, lty = 5, lwd = 1)
