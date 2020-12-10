@@ -216,7 +216,7 @@ shinyServer(function(input, output){
                 {paste0("rgb(255,", ., ",", ., ")")}
               
               
-              Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+              Summary<- DT::datatable(summ_t) %>% DT::formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
               
               
               
