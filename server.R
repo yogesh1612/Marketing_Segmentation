@@ -20,8 +20,6 @@ library('tibble')
 
 
 
-
-
 shinyServer(function(input, output){
   
   
@@ -148,7 +146,7 @@ shinyServer(function(input, output){
             {paste0("rgb(255,", ., ",", ., ")")}
           
           
-          Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+          Summary<- DT::datatable(summ_t) %>% DT::formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
           
           
           
@@ -216,7 +214,7 @@ shinyServer(function(input, output){
                 {paste0("rgb(255,", ., ",", ., ")")}
               
               
-              Summary<- DT::datatable(summ_t) %>% DT::formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
+              Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
               
               
               
@@ -291,11 +289,10 @@ shinyServer(function(input, output){
           return(data.frame())
         }
         d <- dist(Dataset(), method = "euclidean") # distance matrix
-        fit <- hclust(d, method="ward.D2")         
-        fit1<- dendextend::set(fit, "labels_cex", 0.9)
-
-        fit1 %>% dendextend::set("branches_k_color", k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
-        
+        fit <- hclust(d, method="ward.D2")  
+        fit1 <- as.dendrogram(fit)
+        fit1 %>% color_branches(k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
+       # fit1<- dendextend::set(fit1, "labels_cex", 0.5)
         fit1 %>% rect.dendrogram(k=input$Clust, horiz = FALSE,
                                  border = 8, lty = 5, lwd = 1)
         # plot(fit) # display dendogram
@@ -322,3 +319,4 @@ shinyServer(function(input, output){
     
 })
   
+
