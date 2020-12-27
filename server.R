@@ -16,7 +16,7 @@ library('data.table')
 library('tibble')
 library('DT')
 library('dendextend')
-
+library('dplyr')
 
 
 
@@ -51,20 +51,28 @@ shinyServer(function(input, output){
       write.csv(read.csv("data/ConneCtorPDASegmentation.csv"), file, row.names=F)
     }
   )
+
   
-  output$downloadData2 <- downloadHandler(
-    filename = function() { "ConneCtorPDADiscriminant.csv" },
-    content = function(file) {
-      write.csv(read.csv("data/ConneCtorPDADiscriminant.csv"), file, row.names=F)
-    }
-  )
+  # Partial example
+  output$colList <- renderUI({
+        varSelectInput("selVar",label = "Select Variables",data = Dataset(),multiple = TRUE,selectize = TRUE,selected = colnames(Dataset()))
+  })
   
-  output$downloadData3 <- downloadHandler(
-    filename = function() { "ConneCtorPDAClassification.csv" },
-    content = function(file) {
-      write.csv(read.csv("data/ConneCtorPDAClassification.csv"), file, row.names=F, col.names=F)
-    }
-  )
+ # Dataset3 <- reactive({
+#if (length(input$selVar) == 0) return(NULL)
+   #Dataset() %>% dplyr::select(!!!input$selVar)
+ # })
+
+  # output$t1 <- renderTable({
+  #   if (is.null(input$file)) { return(NULL) }
+  #   else{
+  #     return(Dataset() %>% dplyr::select(!!!input$selVar))
+  #    # return(df)
+  #   }
+  #   
+  # })
+  
+ 
   
   t0 = reactive({
     set.seed(12345)
@@ -76,9 +84,10 @@ shinyServer(function(input, output){
       }
       
       else {
-        fit = kmeans(Dataset(),input$Clust)
+        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        fit = kmeans(Dataset3,input$Clust)
         Segment.Membership =  paste0("segment","_",fit$cluster)
-        d = data.frame(r.name = row.names(Dataset2()),Segment.Membership,Dataset2())
+        d = data.frame(r.name = row.names(Dataset3),Segment.Membership,Dataset3)
         return(d)
       }
     })
@@ -89,11 +98,12 @@ shinyServer(function(input, output){
         return(data.frame())
       }
       else {
-        distm <- dist(Dataset(), method = "euclidean") # distance matrix
+        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        distm <- dist(Dataset3, method = "euclidean") # distance matrix
         fit <- hclust(distm, method="ward") 
         Segment.Membership =  cutree(fit, k=input$Clust)
         Segment.Membership =  paste0("segment","_",Segment.Membership)
-        d = data.frame(r.name = row.names(Dataset2()),Segment.Membership,Dataset2())
+        d = data.frame(r.name = row.names(Dataset3),Segment.Membership,Dataset3)
         return(d)
       }
     })
@@ -101,10 +111,12 @@ shinyServer(function(input, output){
     
   
   output$seg_count <- renderTable({
-    
-                          seg_table <- as.data.frame(table(t0()$Segment.Membership))
+                          if (is.null(input$file)) { return(NULL) }
+                          else{seg_table <- as.data.frame(table(t0()$Segment.Membership))
                           colnames(seg_table) <- c("Segment", "Member Count") 
                           return(seg_table)
+                          }
+                          
                         })
   
     output$table <- renderDataTable({
@@ -253,7 +265,8 @@ shinyServer(function(input, output){
         return(data.frame())
       }
       else {
-        data.pca <- prcomp(Dataset(),center = TRUE,scale. = TRUE)
+        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        data.pca <- prcomp(Dataset3,center = TRUE,scale. = TRUE)
         plot(data.pca, type = "l"); abline(h=1)    
       }
     })
@@ -268,10 +281,11 @@ shinyServer(function(input, output){
           return(data.frame())
         }
         
-        fit = kmeans(Dataset(),input$Clust)
+        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        fit = kmeans(Dataset3,input$Clust)
         
         classif1 = paste0("segment","_",fit$cluster)
-        data.pca <- prcomp(Dataset(),
+        data.pca <- prcomp(Dataset3,
                            center = TRUE,
                            scale. = TRUE)
         
@@ -296,7 +310,8 @@ shinyServer(function(input, output){
           # User has not uploaded a file yet
           return(data.frame())
         }
-        d <- dist(Dataset(), method = "euclidean") # distance matrix
+        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        d <- dist(Dataset3, method = "euclidean") # distance matrix
         fit <- hclust(d, method="ward.D2")  
         fit1 <- as.dendrogram(fit)
         fit1 %>% color_branches(k = input$Clust) %>% plot(main = "Dendrogram",horiz=FALSE)
