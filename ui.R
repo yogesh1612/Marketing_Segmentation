@@ -14,17 +14,19 @@ shinyUI(fluidPage(
   titlePanel(title=div(img(src="logo.png",align='right'),"Segmentation Analysis")),
   # Input in sidepanel:
   sidebarPanel(
-
+s
     fileInput("file", "Upload Segmentation data (csv file with header)"),
-        
+    uiOutput("colList"),  
     selectInput("select", "Choose Segmentation Algo", 
                        c("K-Means","Hierarchical"), selected = "K-Means"),
+
     
-    numericInput("Clust", "Number of Segments:", 3),
+    
+    numericInput("Clust", "Number of Segments:", value = 3,min = 1),
     
     br(),
 
-submitButton(text = "Apply Changes", icon("refresh"))
+  #submitButton(text = "Apply Changes", icon("refresh"))
   ),
   # Main:
   mainPanel( 
@@ -35,6 +37,7 @@ submitButton(text = "Apply Changes", icon("refresh"))
                          p("Market segmentation is a marketing strategy which involves dividing a broad target market into subsets of consumers, businesses, or countries who have, or are perceived to have, common needs, interests, and priorities, and then designing and implementing strategies to target them. Market segmentation strategies are generally used to identify and further define the target customers, and provide supporting data for marketing plan elements such as positioning to achieve certain marketing plan objectives. Businesses may develop product differentiation strategies, or an undifferentiated approach, involving specific products or product lines depending on the specific demand and attributes of the target segment.",
                            align="justify"),
                          a(href="https://en.wikipedia.org/wiki/Market_segmentation","- Wikipedia"),
+                         tableOutput('t1'),
                          br()),
                     
                   tabPanel("Data Input Format",
@@ -59,6 +62,7 @@ submitButton(text = "Apply Changes", icon("refresh"))
                 
                 tabPanel("Summary - Segmentation",h3(textOutput("caption1")), h4(div(textOutput("caption2"),style = "color:Red")),
                            plotOutput("plotpca",height = 400, width = 500),tableOutput('seg_count'),dataTableOutput("summary")),
+                          
                 
                 tabPanel("Plot",h3("Segments Plot"), plotOutput("plot",height = 700, width = 840)),
                 tabPanel("Data Segment",br(),
