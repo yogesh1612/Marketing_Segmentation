@@ -14,7 +14,7 @@ shinyUI(fluidPage(
   titlePanel(title=div(img(src="logo.png",align='right'),"Segmentation Analysis")),
   # Input in sidepanel:
   sidebarPanel(
-s
+
     fileInput("file", "Upload Segmentation data (csv file with header)"),
     uiOutput("colList"),  
     selectInput("select", "Choose Segmentation Algo", 
