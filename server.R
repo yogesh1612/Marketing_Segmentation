@@ -58,21 +58,14 @@ shinyServer(function(input, output){
         varSelectInput("selVar",label = "Select Variables",data = Dataset(),multiple = TRUE,selectize = TRUE,selected = colnames(Dataset()))
   })
   
- # Dataset3 <- reactive({
-#if (length(input$selVar) == 0) return(NULL)
-   #Dataset() %>% dplyr::select(!!!input$selVar)
- # })
-
-  # output$t1 <- renderTable({
-  #   if (is.null(input$file)) { return(NULL) }
-  #   else{
-  #     return(Dataset() %>% dplyr::select(!!!input$selVar))
-  #    # return(df)
-  #   }
-  #   
-  # })
   
- 
+  
+  Data_for_algo <- reactive({if(input$scale==TRUE){
+                    return(Dataset())
+                    }else{
+                    return(Dataset2())
+                    }})
+  
   
   t0 = reactive({
     set.seed(12345)
@@ -84,7 +77,7 @@ shinyServer(function(input, output){
       }
       
       else {
-        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
         fit = kmeans(Dataset3,input$Clust)
         Segment.Membership =  paste0("segment","_",fit$cluster)
         d = data.frame(r.name = row.names(Dataset3),Segment.Membership,Dataset3)
@@ -98,7 +91,7 @@ shinyServer(function(input, output){
         return(data.frame())
       }
       else {
-        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
         distm <- dist(Dataset3, method = "euclidean") # distance matrix
         fit <- hclust(distm, method="ward") 
         Segment.Membership =  cutree(fit, k=input$Clust)
@@ -144,15 +137,7 @@ shinyServer(function(input, output){
           return(data.frame())
         }
         else {
-          # 
-          # fit = kmeans(Dataset(),input$Clust)
-          # Segment.Membership = as.character(fit$cluster)
-          # clustmeans = aggregate(Dataset2(),by = list(Segment.Membership), FUN = mean)
-          # Summary = list(Segment.Membership = Segment.Membership, SegMeans =clustmeans, Count = table(Segment.Membership) )
-          # 
-          # 
-          
-
+ 
           summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
             summarise_if(is.numeric, ~round(mean(.),2))
 
@@ -169,43 +154,7 @@ shinyServer(function(input, output){
           Summary<- DT::datatable(summ_t) %>% DT::formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
           
           
-          
-          
-          # summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
-          #   summarise_if(is.numeric, ~round(mean(.),2))
-          # 
-          # summ_t <- as.data.frame(t(summ))%>%`colnames<-`(.[1, ]) %>% .[-1, ]
-          # summ_t[] <- lapply(summ_t, function(x) as.numeric(as.character(x)))
-          # summ_t<- summ_t %>% rownames_to_column("Variable")
-          # 
-          # summ_t1 <- summ_t%>% mutate_if(is.numeric, function(x) {
-          #   cell_spec(x, bold = T, 
-          #             color = spec_color(x, end = 0.9,option = "C"),
-          #             font_size = spec_font_size(x,begin = 14,end = 18))
-          # })
-          # 
-          # Summary <- summ_t1%>%
-          #   kable(escape = F, align = "c") %>%
-          #   kable_styling(c("striped", "condensed"), full_width = F)%>%
-          #   footnote(general = "Mean value of all variables within each cluster. ")
-          # 
-          
-          
-          # Summary<-t0()[-1] %>% 
-          #   #mutate(Group = as.factor(Segment.Membership)) %>%
-          #   group_by(Segment.Membership) %>%
-          #   summarize_all(.funs = list(mean)) %>%
-          #   arrange(Segment.Membership) %>%
-          #   round(2)%>%
-          #   mutate_if(is.numeric, function(x) {
-          #     cell_spec(x, bold = T, 
-          #               color = spec_color(x, end = 0.9),
-          #               font_size = spec_font_size(x,begin = 14,end = 18))
-          #   }) %>%
-          #   kable(escape = F, align = "c") %>%
-          #   kable_styling(c("striped", "condensed"), full_width = F)%>%
-          # footnote(general = "Mean value of all variables within each cluster. ")
-          return(Summary)
+        return(Summary)
         }
       })  
       else if (input$select == "Hierarchical") ({
@@ -214,13 +163,7 @@ shinyServer(function(input, output){
               return(data.frame())
             }
             else {
-              # d <- dist(Dataset(), method = "euclidean") # distance matrix
-              # fit <- hclust(d, method="ward")
-              # Segment.Membership =  as.character(cutree(fit, k=input$Clust))
-              # clustmeans = aggregate(Dataset2(),by = list(Segment.Membership), FUN = mean)
-              # Summary = list(Segment.Membership = Segment.Membership, SegMeans =clustmeans, Count = table(Segment.Membership), ModelSumm = fit )
-              # 
-              
+           
               summ <- t0()[-1]%>% group_by(Segment.Membership) %>%
                 summarise_if(is.numeric, ~round(mean(.),2))
               
@@ -235,24 +178,7 @@ shinyServer(function(input, output){
               
               
               Summary<- DT::datatable(summ_t) %>% formatStyle(names(summ_t), backgroundColor = styleInterval(brks, clrs))
-              
-              
-              
-              
-              # Summary<-t0()[-1] %>% 
-              #  # mutate(Group = as.factor(Segment.Membership)) %>%
-              #   group_by(Segment.Membership) %>%
-              #   summarize_all(.funs = list(mean)) %>%
-              #   arrange(Segment.Membership) %>%
-              #   round(2)%>%
-              #   mutate_if(is.numeric, function(x) {
-              #     cell_spec(x, bold = T, 
-              #               #color = spec_color(x, end = 0.9),
-              #               font_size = spec_font_size(x,begin = 14,end = 18))
-              #   }) %>%
-              #   kable(escape = F, align = "c") %>%
-              #   kable_styling(c("striped", "condensed"), full_width = F)%>%
-              #   footnote(general = "Mean value of all variables within each cluster. ")
+        
               return(Summary)
             }
           })
@@ -265,7 +191,7 @@ shinyServer(function(input, output){
         return(data.frame())
       }
       else {
-        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
         data.pca <- prcomp(Dataset3,center = TRUE,scale. = TRUE)
         plot(data.pca, type = "l"); abline(h=1)    
       }
@@ -281,7 +207,7 @@ shinyServer(function(input, output){
           return(data.frame())
         }
         
-        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
         fit = kmeans(Dataset3,input$Clust)
         
         classif1 = paste0("segment","_",fit$cluster)
@@ -310,7 +236,7 @@ shinyServer(function(input, output){
           # User has not uploaded a file yet
           return(data.frame())
         }
-        Dataset3 <- Dataset() %>% dplyr::select(!!!input$selVar)
+        Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
         d <- dist(Dataset3, method = "euclidean") # distance matrix
         fit <- hclust(d, method="ward.D2")  
         fit1 <- as.dendrogram(fit)
@@ -318,10 +244,7 @@ shinyServer(function(input, output){
        # fit1<- dendextend::set(fit1, "labels_cex", 0.5)
         fit1 %>% rect.dendrogram(k=input$Clust, horiz = FALSE,
                                  border = 8, lty = 5, lwd = 1)
-        # plot(fit) # display dendogram
-        # groups <- cutree(fit, k=input$Clust) # cut tree into 5 clusters
-        # # draw dendogram with red borders around the 5 clusters
-        # rect.hclust(fit, k=input$Clust, border="red") 
+  
       })
     })
     
@@ -332,12 +255,7 @@ shinyServer(function(input, output){
       }
     )
     
-    output$downloadData5 <- downloadHandler(
-      filename = function() { "targeting.csv" },
-      content = function(file) {
-        write.csv(t1(), file, row.names=F)
-      }
-    )
+
     
     
 })
