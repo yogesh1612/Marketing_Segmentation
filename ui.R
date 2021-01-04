@@ -19,7 +19,7 @@ shinyUI(fluidPage(
     uiOutput("colList"),  
     selectInput("select", "Choose Segmentation Algo", 
                        c("K-Means","Hierarchical"), selected = "K-Means"),
-
+    checkboxInput("scale","scale data",value=TRUE),
     
     
     numericInput("Clust", "Number of Segments:", value = 3,min = 1),
