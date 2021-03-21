@@ -30,7 +30,7 @@ shinyServer(function(input, output){
       rownames(Dataset) = Dataset[,1]
       Dataset1 = Dataset[,2:ncol(Dataset)]
       #Dataset = t(Dataset)
-      Dataset1 = as.data.frame(scale(Dataset1, center = T, scale = T))
+     # Dataset1 = as.data.frame(scale(Dataset1, center = T, scale = T))
       return(Dataset1)
     }
   })
@@ -44,6 +44,9 @@ shinyServer(function(input, output){
       return(Dataset1)
     }
   })
+  
+  
+  output$up_data <- DT::renderDataTable(DT::datatable(Dataset(),options = list(pageLength =25)))
 
   output$downloadData1 <- downloadHandler(
     filename = function() { "ConneCtorPDASegmentation.csv" },
@@ -78,9 +81,16 @@ shinyServer(function(input, output){
       
       else {
         Dataset3 <- Data_for_algo() %>% dplyr::select(!!!input$selVar)
+        
+        if(input$scale==TRUE){
+          Dataset3 = as.data.frame(scale(Dataset3, center = T, scale = T))
+          Dataset3 = round(Dataset3,3)
+        }
+        
         fit = kmeans(Dataset3,input$Clust)
         Segment.Membership =  paste0("segment","_",fit$cluster)
         d = data.frame(r.name = row.names(Dataset3),Segment.Membership,Dataset3)
+        #d <- d %>% mutate(across(where(is.numeric), round, 3))
         return(d)
       }
     })
@@ -97,6 +107,7 @@ shinyServer(function(input, output){
         Segment.Membership =  cutree(fit, k=input$Clust)
         Segment.Membership =  paste0("segment","_",Segment.Membership)
         d = data.frame(r.name = row.names(Dataset3),Segment.Membership,Dataset3)
+        #d <- d %>% mutate(across(where(is.numeric), round, 3))
         return(d)
       }
     })
@@ -113,7 +124,7 @@ shinyServer(function(input, output){
                         })
   
     output$table <- renderDataTable({
-      t0()
+      t0()%>% mutate(across(where(is.numeric), round, 3))
     }, options = list(lengthMenu = c(5, 30, 50,100), pageLength = 30))
     
     output$caption1 <- renderText({
